@@ -53,8 +53,8 @@ uses Windows, Objects;
 
 const
   FARMANAGERVERSION_MAJOR = 2;
-  FARMANAGERVERSION_MINOR = 0;
-  FARMANAGERVERSION_BUILD = 1658;
+  FARMANAGERVERSION_MINOR = 4;
+//  FARMANAGERVERSION_BUILD = 1658;
 
 type
 //TFarChar = AnsiChar;
@@ -84,8 +84,8 @@ type
 const
   FARMACRO_KEY_EVENT = KEY_EVENT or $8000;
 
-  CP_UNICODE = 1200;
-  CP_REVERSEBOM = 1201;
+//  CP_UNICODE = 1200;
+//  CP_REVERSEBOM = 1201;
   CP_AUTODETECT = UINT(-1);
 
 
@@ -273,6 +273,9 @@ const
   DM_SETDLGITEMSHORT      = DM_FIRST+66;
 
   DM_GETDIALOGINFO        = DM_FIRST+67;
+
+  DM_GETCOLOR             = DM_FIRST+68;
+  DM_SETCOLOR             = DM_FIRST+69;
 
   DN_FIRST                = $1000;
   DN_BTNCLICK             = DN_FIRST+1;
@@ -683,6 +686,7 @@ const
   FDLG_SMALLDIALOG  = $00000002;
   FDLG_NODRAWSHADOW = $00000004;
   FDLG_NODRAWPANEL  = $00000008;
+  FDLG_REGULARIDLE  = $00000040;
 
 type
 (*
@@ -807,6 +811,7 @@ type
 { MENUITEMFLAGS }
 
 const
+  MIF_NONE       = 0;
   MIF_SELECTED   = $00010000;
   MIF_CHECKED    = $00020000;
   MIF_SEPARATOR  = $00040000;
@@ -909,14 +914,18 @@ struct FAR_FIND_DATA
 type
   PFarFindData = ^TFarFindData;
   TFarFindData = record
-    dwFileAttributes : DWORD;
+//    dwFileAttributes : DWORD;
     ftCreationTime : TFileTime;
     ftLastAccessTime : TFileTime;
     ftLastWriteTime : TFileTime;
-    nFileSize :Int64;  // nFileSizeLow, nFileSizeHigh : DWORD;
-    nPackSize :Int64;  // nPackSizeLow, nPackSizeHigh : DWORD;
+//    nFileSize :Int64;  // nFileSizeLow, nFileSizeHigh : DWORD;
+//    nPackSize :Int64;  // nPackSizeLow, nPackSizeHigh : DWORD;
+    nPhysicalSize: Int64;
+    nFileSize: Int64;
+    dwFileAttributes: DWORD;
+    dwUnixMode: DWORD;
     cFileName :PFarChar;
-    cAlternateFileName :PFarChar;
+//    cAlternateFileName :PFarChar;
   end;
 
   TFarFindDataArray = packed array [0..MaxInt div sizeof(TFarFindData) - 1] of TFarFindData;
@@ -941,13 +950,15 @@ type
   PPluginPanelItem = ^TPluginPanelItem;
   TPluginPanelItem = record
     FindData : TFarFindData;
+    UserData : DWORD_PTR;
     Flags : DWORD;
     NumberOfLinks : DWORD;
     Description : PFarChar;
     Owner : PFarChar;
+    Group : PFarChar;
     CustomColumnData : PPCharArray;
     CustomColumnNumber : Integer;
-    UserData : DWORD_PTR;
+//    UserData : DWORD_PTR;
     CRC32 : DWORD;
     Reserved : array [0..1] of DWORD_PTR;
   end;
@@ -1010,7 +1021,7 @@ type
     Visible : Integer;
     Focus : Integer;
     ViewMode : Integer;
-    ShortNames : Integer;
+//    ShortNames : Integer;
     SortMode : Integer;
     Flags : DWORD;
     Reserved : DWORD;
@@ -1092,6 +1103,9 @@ const
   FCTL_GETPANELFORMAT           = 32;
   FCTL_GETPANELHOSTFILE         = 33;
 
+  FCTL_SETCASESENSITIVESORT     = 34;
+  FCTL_GETPANELPLUGINHANDLE     = 35; // Param2 points to value of type HANDLE, sets that value to handle of plugin that renders that panel or INVALID_HANDLE_VALUE
+  FCTL_SETPANELLOCATION         = 36; // Param2 points to FarPanelLocation
   
 type
 (*
@@ -1361,11 +1375,15 @@ const
 { FarSystemSettings }
 
 const
-  FSS_CLEARROATTRIBUTE           = $00000001;
+//  FSS_CLEARROATTRIBUTE           = $00000001;
   FSS_DELETETORECYCLEBIN         = $00000002;
-  FSS_USESYSTEMCOPYROUTINE       = $00000004;
-  FSS_COPYFILESOPENEDFORWRITING  = $00000008;
-  FSS_CREATEFOLDERSINUPPERCASE   = $00000010;
+//  FSS_USESYSTEMCOPYROUTINE       = $00000004;
+//  FSS_COPYFILESOPENEDFORWRITING  = $00000008;
+//  FSS_CREATEFOLDERSINUPPERCASE   = $00000010;
+
+  FSS_WRITETHROUGH               = $00000004;
+  FSS_RESERVED                   = $00000008;
+
   FSS_SAVECOMMANDSHISTORY        = $00000020;
   FSS_SAVEFOLDERSHISTORY         = $00000040;
   FSS_SAVEVIEWANDEDITHISTORY     = $00000080;
@@ -1471,7 +1489,7 @@ type
 const
   KSFLAGS_DISABLEOUTPUT       = $00000001;
   KSFLAGS_NOSENDKEYSTOPLUGINS = $00000002;
-  KSFLAGS_REG_MULTI_SZ        = $00100000;
+//  KSFLAGS_REG_MULTI_SZ        = $00100000;
   KSFLAGS_SILENTCHECK         = $00000001;
 
 (*
@@ -1640,11 +1658,11 @@ type
 { PROGRESSTATE }
 
 const
-  PS_NOPROGRESS    = 0;
-  PS_INDETERMINATE = 1;
-  PS_NORMAL        = 2;
-  PS_ERROR         = 4;
-  PS_PAUSED        = 8;
+  PGS_NOPROGRESS    = 0;
+  PGS_INDETERMINATE = 1;
+  PGS_NORMAL        = 2;
+  PGS_ERROR         = 4;
+  PGS_PAUSED        = 8;
 
 (*
 struct PROGRESSVALUE
@@ -1798,7 +1816,8 @@ type
     Wrap : Integer;
     WordWrap : Integer;
     Hex : Integer;
-    Reserved : array [0..3] of DWORD;
+	Processed : Integer;
+    Reserved : array [0..2] of DWORD;
   end;
 
 (*
@@ -2533,7 +2552,7 @@ typedef struct FarStandardFunctions
   FARSTDITOA                 itoa;
   FARSTDITOA64               itoa64;
   // <C&C++>
-  FARSTDSPRINTF              sprintf;
+  //FARSTDSPRINTF              sprintf;
   FARSTDSSCANF               sscanf;
   // </C&C++>
   FARSTDQSORT                qsort;
@@ -2596,7 +2615,7 @@ type
     itoa                : TFarStdItoa;
     itoa64              : TFarStdItoa64;
 
-    sprintf             : Pointer;
+    //sprintf             : Pointer;
     sscanf              : Pointer;
 
     qsort               : TFarStdQSort;
@@ -2605,7 +2624,11 @@ type
 
     snprintf            : Pointer {TFarStdSNPRINTF};
 
-    Reserved            : array [0..7] of DWORD_PTR;
+    Reserved            : array [0..6] of DWORD_PTR;
+
+// TODO FIXME ***
+//	const WCHAR *              BoxSymbols; // indexed via BOX_DEF_SYMBOLS
+    BoxSymbols          : Pointer;
 
     LIsLower            : TFarStdLocalIsLower;
     LIsUpper            : TFarStdLocalIsUpper;
@@ -2646,6 +2669,13 @@ type
     ConvertPath         : TFarConvertPath;
     GetReparsePointInfo : TFarGetReparsePointInfo;
     GetCurrentDirectory : TFarGetCurrentDirectory;
+
+// TODO FIXME ***
+    Execute                     : Pointer;
+    ExecuteLibrary              : Pointer;
+    DisplayNotification         : Pointer;
+    DispatchInterThreadCalls    : Pointer;
+    BackgroundTask              : Pointer;
   end; {TFarStandardFunctions}
 
 
@@ -2743,6 +2773,7 @@ const
   PF_VIEWER        = $0008;
   PF_FULLCMDLINE   = $0010;
   PF_DIALOG        = $0020;
+  PF_PREOPEN       = $8000; // early dlopen plugin but initialize it later, when it will be really needed
 
 (*
 struct PluginInfo
@@ -2866,8 +2897,8 @@ const
   SM_OWNER          = 9;
   SM_COMPRESSEDSIZE = 10;
   SM_NUMLINKS       = 11;
-  SM_NUMSTREAMS     = 12;
-  SM_STREAMSSIZE    = 13;
+//  SM_NUMSTREAMS     = 12;
+//  SM_STREAMSSIZE    = 13;
   SM_FULLNAME       = 14;
 
 
@@ -2910,6 +2941,8 @@ const
   OPM_TOPLEVEL  = $0010;
   OPM_DESCR     = $0020;
   OPM_QUICKVIEW = $0040;
+  OPM_PGDN      = $0080;
+  OPM_COMMANDS  = $0100;
 
 
 (*
@@ -2999,6 +3032,9 @@ const
 const
   PCTL_LOADPLUGIN   = 0;
   PCTL_UNLOADPLUGIN = 1;
+
+  PCTL_FORCEDLOADPLUGIN   = 2;
+  PCTL_CACHEFORGET        = 3; // forgets cached information for specified plugin
 
 { FAR_PLUGIN_LOAD_TYPE }
 
@@ -3113,7 +3149,7 @@ void   WINAPI _export SetStartupInfoW(const struct PluginStartupInfo *Info);
 #define FARMANAGERVERSION MAKEFARVERSION(FARMANAGERVERSION_MAJOR,FARMANAGERVERSION_MINOR,FARMANAGERVERSION_BUILD)
 *)
 
-function MakeFarVersion (Major : DWORD; Minor : DWORD; Build : DWORD) : DWORD;
+function MakeFarVersion (Major : DWORD; Minor : DWORD) : DWORD;
 
 
 (*
@@ -3189,9 +3225,9 @@ const
 {******************************************************************************}
 
 
-function MakeFarVersion (Major :DWORD; Minor :DWORD; Build :DWORD) :DWORD;
+function MakeFarVersion (Major :DWORD; Minor :DWORD) :DWORD;
 begin
-  Result := (Major shl 8) or (Minor) or (Build shl 16);
+  Result := (Major shl 16) or (Minor);
 end;
 
 
