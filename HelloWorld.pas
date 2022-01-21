@@ -4,14 +4,16 @@
   Delphi version copyright (c) 2000, Vasily V. Moshninov
 *)
 
+{$mode Delphi}
+
 {$IFNDEF VIRTUALPASCAL}
-  {$APPTYPE CONSOLE}
+//  {$APPTYPE CONSOLE}
   {$MINENUMSIZE 4}
 {$ENDIF}
 
 library HelloWorld;
 
-uses windows, plugin;
+uses Windows, PluginW;
 
 type
   TMessage = (MTitle, MMessage1, MMessage2, MMessage3, MMessage4, MButton);
@@ -23,7 +25,7 @@ var
  Функция GetMsg возвращает строку сообщения из языкового файла.
  А это надстройка над Info.GetMsg для сокращения кода :-)
 *)
-function GetMsg(MsgId: TMessage): PChar;
+function GetMsg(MsgId: TMessage): PWideChar;
 begin
   result:= FARAPI.GetMsg(FARAPI.ModuleNumber, integer(MsgId));
 end;
@@ -33,7 +35,7 @@ end;
 другими функциями. Она передается плагину информацию,
 необходимую для дальнейшей работы.
 *)
-procedure SetStartupInfo(var psi: TPluginStartupInfo); stdcall;
+procedure SetStartupInfoW(var psi: TPluginStartupInfo); stdcall;
 begin
   Move(psi, FARAPI, SizeOf(FARAPI));
 end;
@@ -43,9 +45,9 @@ end;
   (general) информации о плагине
 *)
 var
-  PluginMenuStrings: array[0..0] of PChar;
+  PluginMenuStrings: array[0..0] of PWideChar;
 
-procedure GetPluginInfo(var pi: TPluginInfo); stdcall;
+procedure GetPluginInfoW(var pi: TPluginInfo); stdcall;
 begin
   pi.StructSize:= SizeOf(pi);
   pi.Flags:= PF_EDITOR;
@@ -58,9 +60,9 @@ end;
 (*
   Функция OpenPlugin вызывается при создании новой копии плагина.
 *)
-function OpenPlugin(OpenFrom: integer; Item: integer): THandle; stdcall;
+function OpenPluginW(OpenFrom: integer; Item: integer): THandle; stdcall;
 var
-  Msg: array[0..6] of PChar;
+  Msg: array[0..6] of PWideChar;
 begin
   Msg[0]:= GetMsg(MTitle);
   Msg[1]:= GetMsg(MMessage1);
@@ -81,9 +83,9 @@ begin
 end;
 
 exports
-  SetStartupInfo,
-  GetPluginInfo,
-  OpenPlugin;
+  SetStartupInfoW,
+  GetPluginInfoW,
+  OpenPluginW;
 
 begin
 end.
