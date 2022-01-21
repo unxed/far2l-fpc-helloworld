@@ -4,6 +4,8 @@
   Plugin API for FAR Manager <%VERSION%>
 }
 
+{$mode Delphi}
+
 {
 Copyright (c) 1996 Eugene Roshal
 Copyright (c) 2000 Far Group
@@ -47,7 +49,7 @@ Unit PluginW;
 
 interface
 
-uses Windows;
+uses Windows, Objects;
 
 const
   FARMANAGERVERSION_MAJOR = 2;
