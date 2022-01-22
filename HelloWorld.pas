@@ -25,7 +25,7 @@ var
  Функция GetMsg возвращает строку сообщения из языкового файла.
  А это надстройка над Info.GetMsg для сокращения кода :-)
 *)
-function GetMsg(MsgId: TMessage): PUCS4Char;
+function GetMsg(MsgId: TMessage): PFarChar;
 begin
   result:= FARAPI.GetMsg(FARAPI.ModuleNumber, integer(MsgId));
 end;
@@ -45,7 +45,7 @@ end;
   (general) информации о плагине
 *)
 var
-  PluginMenuStrings: array[0..0] of PUCS4Char;
+  PluginMenuStrings: array[0..0] of PFarChar;
 
 procedure GetPluginInfoW(var pi: TPluginInfo); stdcall;
 begin
@@ -62,7 +62,7 @@ end;
 *)
 function OpenPluginW(OpenFrom: integer; Item: integer): THandle; stdcall;
 var
-  Msg: array[0..6] of PUCS4Char;
+  Msg: array[0..6] of PFarChar;
 begin
 
   Msg[0]:= GetMsg(MTitle);
