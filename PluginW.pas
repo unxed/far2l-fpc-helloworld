@@ -42,7 +42,10 @@ other possible license with no implications from the above license on them.
 {$RangeChecks Off}
 
 {$ifdef CPUX86_64}
+(*
+ // this breaks everything under FPC on Linux x64
  {$PACKRECORDS C}
+*)
 {$endif CPUX86_64}
 
 Unit PluginW;
@@ -60,8 +63,13 @@ type
 //TFarChar = AnsiChar;
 //PFarChar = PAnsiChar;
 
-  TFarChar = WideChar;
-  PFarChar = PWideChar;
+  //TFarChar = WideChar;
+  //PFarChar = PWideChar;
+
+  // WideChar is 16-bit in Free Pascal Compiler on Linux x64,
+  // but far2l uses UTF32
+  TFarChar = UCS4Char;
+  PFarChar = PUCS4Char;
 
  {$ifdef CPUX86_64}
   INT_PTR = PtrInt;

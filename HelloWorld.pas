@@ -25,7 +25,7 @@ var
  Функция GetMsg возвращает строку сообщения из языкового файла.
  А это надстройка над Info.GetMsg для сокращения кода :-)
 *)
-function GetMsg(MsgId: TMessage): PWideChar;
+function GetMsg(MsgId: TMessage): PUCS4Char;
 begin
   result:= FARAPI.GetMsg(FARAPI.ModuleNumber, integer(MsgId));
 end;
@@ -45,7 +45,7 @@ end;
   (general) информации о плагине
 *)
 var
-  PluginMenuStrings: array[0..0] of PWideChar;
+  PluginMenuStrings: array[0..0] of PUCS4Char;
 
 procedure GetPluginInfoW(var pi: TPluginInfo); stdcall;
 begin
@@ -62,19 +62,22 @@ end;
 *)
 function OpenPluginW(OpenFrom: integer; Item: integer): THandle; stdcall;
 var
-  Msg: array[0..6] of PWideChar;
+  Msg: array[0..6] of PUCS4Char;
 begin
+
   Msg[0]:= GetMsg(MTitle);
   Msg[1]:= GetMsg(MMessage1);
   Msg[2]:= GetMsg(MMessage2);
   Msg[3]:= GetMsg(MMessage3);
   Msg[4]:= GetMsg(MMessage4);
-  Msg[5]:= #01#00;                   // separator line
+//  Msg[5]:= #01#00;                   // separator line
+  Msg[5]:= GetMsg(MTitle); // FIXME - no UTF32 string constants in FPC
   Msg[6]:= GetMsg(MButton);
 
   FARAPI.Message(FARAPI.ModuleNumber,             // PluginNumber
                  FMSG_WARNING or FMSG_LEFTALIGN,  // Flags
-                'Contents',                       // HelpTopic
+//                'Contents',                       // HelpTopic
+                 GetMsg(MTitle), // FIXME - no UTF32 string constants in FPC
                  @Msg,                            // Items
                  7,                               // ItemsNumber
                  1);                              // ButtonsNumber
