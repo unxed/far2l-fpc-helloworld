@@ -13,7 +13,8 @@
 
 library HelloWorld;
 
-uses Windows, Plugin;
+{$UNITPATH lazutf8}
+uses Windows, Plugin, fpcadds, LazUTF8;
 
 type
   TMessage = (MTitle, MMessage1, MMessage2, MMessage3, MMessage4, MButton);
@@ -64,7 +65,7 @@ function OpenPlugin(OpenFrom: integer; Item: integer): THandle; stdcall;
 var
   Msg: array[0..6] of PChar;
 begin
-  Msg[0]:= GetMsg(MTitle);
+  Msg[0]:= PChar(UTF8UpperString(GetMsg(MTitle)));  // LazUTF8 usage example
   Msg[1]:= GetMsg(MMessage1);
   Msg[2]:= GetMsg(MMessage2);
   Msg[3]:= #01#00;                            // separator line
