@@ -9,7 +9,7 @@ Current state: builds, runs.
 
 `mb` is UTF-8 version
 
-Both are working, but mb is preferred as UTF-32 is almost not supported by Free Pascal.
+Both are working, but mb is preferred as UTF-32 is almost not supported by Free Pascal. mb version also has bundled UTF-8 processing routines like UTF8UpperString, UTF8LowerString, etc derived from Lazarus.
 
 Important! PluginW.pas and Plugin.pas are somethat incomplete, see FIXME comments.
 Windows.pas may be incomplete also.
