@@ -5,4 +5,5 @@ Many Far Manager Plugins were written in Pascal (like those https://github.com/M
 
 Current state: builds, runs.
 
-
+Important! PluginW.pas and Plugin.pas are somethat incomplete, see FIXME comments.
+Windows.pas may be incomplete also.
