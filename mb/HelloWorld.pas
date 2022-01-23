@@ -13,7 +13,7 @@
 
 library HelloWorld;
 
-uses Windows, PluginW;
+uses Windows, Plugin;
 
 type
   TMessage = (MTitle, MMessage1, MMessage2, MMessage3, MMessage4, MButton);
@@ -35,7 +35,7 @@ end;
 другими функциями. Она передается плагину информацию,
 необходимую для дальнейшей работы.
 *)
-procedure SetStartupInfoW(var psi: TPluginStartupInfo); stdcall;
+procedure SetStartupInfo(var psi: TPluginStartupInfo); stdcall;
 begin
   Move(psi, FARAPI, SizeOf(FARAPI));
 end;
@@ -47,7 +47,7 @@ end;
 var
   PluginMenuStrings: array[0..0] of PFarChar;
 
-procedure GetPluginInfoW(var pi: TPluginInfo); stdcall;
+procedure GetPluginInfo(var pi: TPluginInfo); stdcall;
 begin
   pi.StructSize:= SizeOf(pi);
   pi.Flags:= PF_EDITOR;
@@ -60,24 +60,21 @@ end;
 (*
   Функция OpenPlugin вызывается при создании новой копии плагина.
 *)
-function OpenPluginW(OpenFrom: integer; Item: integer): THandle; stdcall;
+function OpenPlugin(OpenFrom: integer; Item: integer): THandle; stdcall;
 var
-  Msg: array[0..6] of PFarChar;
+  Msg: array[0..6] of PChar;
 begin
-
   Msg[0]:= GetMsg(MTitle);
   Msg[1]:= GetMsg(MMessage1);
   Msg[2]:= GetMsg(MMessage2);
-  Msg[3]:= GetMsg(MMessage3);
-  Msg[4]:= GetMsg(MMessage4);
-//  Msg[5]:= #01#00;                   // separator line
-  Msg[5]:= GetMsg(MTitle); // FIXME - no UTF32 string constants in FPC
+  Msg[3]:= #01#00;                            // separator line
+  Msg[4]:= GetMsg(MMessage3);
+  Msg[5]:= GetMsg(MMessage4);
   Msg[6]:= GetMsg(MButton);
 
   FARAPI.Message(FARAPI.ModuleNumber,             // PluginNumber
                  FMSG_WARNING or FMSG_LEFTALIGN,  // Flags
-//                'Contents',                       // HelpTopic
-                 GetMsg(MTitle), // FIXME - no UTF32 string constants in FPC
+                'Contents',                       // HelpTopic
                  @Msg,                            // Items
                  7,                               // ItemsNumber
                  1);                              // ButtonsNumber
@@ -86,9 +83,9 @@ begin
 end;
 
 exports
-  SetStartupInfoW,
-  GetPluginInfoW,
-  OpenPluginW;
+  SetStartupInfo,
+  GetPluginInfo,
+  OpenPlugin;
 
 begin
 end.

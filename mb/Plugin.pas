@@ -9,6 +9,13 @@
    Additional changes by W.Ehrhardt
 *)
 
+{$mode Delphi}
+
+{$Align Off}
+{$RangeChecks Off}
+
+(*
+
 {$IFDEF VIRTUALPASCAL}
 
   {$DEFINE VP}
@@ -42,19 +49,19 @@
 
 {$ENDIF}
 
-
 // define USE_BOOL in order to be compatible with the
 // Plugin API for Far Manager 1.70 beta 5
 // or undef USE_BOOL to use Integer instead of LongBool
 
 {-$define USE_BOOL}
 
+*)
 
 unit Plugin;
 
 interface
 
-uses Windows;
+uses Windows, Objects;
 
 type
   TFarChar = AnsiChar;
@@ -64,7 +71,7 @@ type
 //PFarChar = PWideChar;
 
 const
-   NM = 260;
+   NM = 4096;
    FARMACRO_KEY_EVENT = KEY_EVENT or $8000;
    MAXSIZE_SHORTCUTDATA = 8192;
    FARMANAGERVERSION : DWORD = 0;
@@ -99,7 +106,8 @@ const
 
 type
    TFarApiMessage = function (
-         PluginNumber : Integer;
+         //PluginNumber : Integer;
+         PluginNumber : IntPtr;
          Flags : DWORD;
          const HelpTopic : PFarChar;
          const Items : PPCharArray;
@@ -506,7 +514,8 @@ type
          ) : Integer; {$IFNDEF VP} stdcall; {$ENDIF}
 
    TFarApiDialog = function (
-         PluginNumber : Integer;
+         //PluginNumber : Integer;
+         PluginNumber : IntPtr;
          X1, Y1, X2, Y2 : Integer;
          const HelpTopic : PFarChar;
          Item : PFarDialogItemArray;
@@ -514,7 +523,8 @@ type
          ) : Integer; {$IFNDEF VP} stdcall; {$ENDIF}
 
    TFarApiDialogEx = function (
-         PluginNumber : Integer;
+         //PluginNumber : Integer;
+         PluginNumber : IntPtr;
          X1, Y1, X2, Y2 : Integer;
          const HelpTopic : PFarChar;
          Item : PFarDialogItemArray;
@@ -583,7 +593,8 @@ const
 
 type
    TFarApiMenu = function (
-         PluginNumber : Integer;
+         //PluginNumber : Integer;
+         PluginNumber : IntPtr;
          X, Y : Integer;
          MaxHeight : Integer;
          Flags : DWORD;
@@ -761,7 +772,8 @@ type
          ) : Integer; {$IFNDEF VP} stdcall; {$ENDIF}
 
    TFarApiGetPluginDirList = function (
-         PluginNumber : Integer;
+         //PluginNumber : Integer;
+         PluginNumber : IntPtr;
          hPlugin : THandle;
          const Dir : PFarChar;
          var PanelItem : PPluginPanelItemArray;
@@ -849,7 +861,8 @@ type
          ) : Integer; {$IFNDEF VP} stdcall; {$ENDIF}
 
    TFarApiGetMsg = function (
-         PluginNumber : Integer;
+         //PluginNumber : Integer;
+         PluginNumber : IntPtr;
          MsgId : Integer
          ) : PFarChar; {$IFNDEF VP} stdcall; {$ENDIF}
 
@@ -1858,7 +1871,8 @@ type
    TPluginStartupInfo = packed record
       StructSize : Integer;
       ModuleName : array [0..NM-1] of TFarChar;
-      ModuleNumber : Integer;
+      //ModuleNumber : Integer;
+      ModuleNumber : IntPtr;
       RootKey : PFarChar;
 
       Menu : TFarApiMenu;
@@ -1886,7 +1900,8 @@ type
       DialogEx : TFarApiDialogEx;
       SendDlgMessage : TFarApiSendDlgMessage;
       DefDlgProc : TFarApiDefDlgProc;
-      Reserved : DWORD;
+      //Reserved : DWORD;
+      Reserved : IntPtr;
       ViewerControl : TFarApiViewerControl;
    end;
 
