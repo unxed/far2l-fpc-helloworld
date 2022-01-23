@@ -13,7 +13,7 @@ const
 
   INVALID_HANDLE_VALUE = HANDLE(-1);
 
-  MAX_PATH = 260;
+  MAX_PATH = 4096;
 
   { Virtual Key codes  }
      VK_LBUTTON = 1;
