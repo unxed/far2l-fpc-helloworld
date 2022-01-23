@@ -68,7 +68,7 @@ begin
   Msg[0]:= PChar(UTF8UpperString(GetMsg(MTitle)));  // LazUTF8 usage example
   Msg[1]:= GetMsg(MMessage1);
   Msg[2]:= GetMsg(MMessage2);
-  Msg[3]:= #01#00;                            // separator line
+  Msg[3]:= #01#00;                                  // separator line
   Msg[4]:= GetMsg(MMessage3);
   Msg[5]:= GetMsg(MMessage4);
   Msg[6]:= GetMsg(MButton);
