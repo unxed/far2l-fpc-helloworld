@@ -6,6 +6,7 @@ Many Far Manager Plugins were written in Pascal (like those https://github.com/M
 Current state: builds, runs.
 
 `wide` is UTF-32 version
+
 `mb` is UTF-8 version
 
 Both are working, but mb is preferred as UTF-32 is almost not supported by Free Pascal.
