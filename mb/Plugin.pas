@@ -72,6 +72,7 @@ type
 
 const
    NM = 4096;
+   MAX_NAME = 255;
    FARMACRO_KEY_EVENT = KEY_EVENT or $8000;
    MAXSIZE_SHORTCUTDATA = 8192;
    FARMANAGERVERSION : DWORD = 0;
@@ -490,6 +491,10 @@ const
    FDLG_SMALLDIALOG  = $00000002;
    FDLG_NODRAWSHADOW = $00000004;
    FDLG_NODRAWPANEL  = $00000008;
+   FDLG_NONMODAL     = $00000010;
+   FDLG_KEEPCONSOLETITLE    = $00000020;
+   // causes dialog to receive DN_ENTERIDLE at least once per second
+   FDLG_REGULARIDLE         = $00000040;
 
 type
    TFarApiWindowProc = function (
@@ -617,31 +622,39 @@ const
 type
    PFarFindData = ^TFarFindData;
    TFarFindData = packed record
-      dwFileAttributes : DWORD;
+      //dwFileAttributes : DWORD;
       ftCreationTime : TFileTime;
       ftLastAccessTime : TFileTime;
       ftLastWriteTime : TFileTime;
-      nFileSizeHigh : DWORD;
-      nFileSizeLow : DWORD;
-      dwReserved0 : DWORD;
-      dwReserved1 : DWORD;
-      cFileName : array [0..MAX_PATH-1] of TFarChar;
-      cAlternateFileName : array [0..13] of TFarChar;
+      //nFileSizeHigh : DWORD;
+      //nFileSizeLow : DWORD;
+      //dwReserved0 : DWORD;
+      //dwReserved1 : DWORD;
+      //cFileName : array [0..MAX_PATH-1] of TFarChar;
+      //cAlternateFileName : array [0..13] of TFarChar;
+      
+      nPhysicalSize : QWord;
+      nFileSize : QWord;
+      dwFileAttributes : DWORD;
+      dwUnixMode : DWORD;
+      cFileName : array [0..MAX_NAME-1] of CHAR;
    end;
 
 type
    PPluginPanelItem = ^TPluginPanelItem;
    TPluginPanelItem = packed record
       FindData : TFarFindData;
-      PackSizeHigh : DWORD;
-      PackSize : DWORD;
+//      PackSizeHigh : DWORD;
+//      PackSize : DWORD;
+      UserData : IntPtr; // FIXME: actually, DWORD_PTR
       Flags : DWORD;
       NumberOfLinks : DWORD;
       Description : PFarChar;
       Owner : PFarChar;
+      Group : PFarChar;
       CustomColumnData : PPCharArray;
       CustomColumnNumber : Integer;
-      UserData : DWORD;
+//      UserData : DWORD;
       CRC32 : DWORD;
       Reserved : array [0..1] of DWORD;
    end;
@@ -688,7 +701,7 @@ type
       ColumnTypes : array [0..79] of TFarChar;
       ColumnWidths : array [0..79] of TFarChar;
       CurDir : array [0..NM-1] of TFarChar;
-      ShortNames : Integer;
+//      ShortNames : Integer;
       SortMode : Integer;
       Flags : DWORD;
       Reserved : DWORD;
@@ -915,11 +928,13 @@ const
 { FarSystemSettings }
 
 const
-   FSS_CLEARROATTRIBUTE          = $00000001;
+//   FSS_CLEARROATTRIBUTE          = $00000001;
    FSS_DELETETORECYCLEBIN        = $00000002;
-   FSS_USESYSTEMCOPYROUTINE      = $00000004;
-   FSS_COPYFILESOPENEDFORWRITING = $00000008;
-   FSS_CREATEFOLDERSINUPPERCASE  = $00000010;
+//   FSS_USESYSTEMCOPYROUTINE      = $00000004;
+//   FSS_COPYFILESOPENEDFORWRITING = $00000008;
+//   FSS_CREATEFOLDERSINUPPERCASE  = $00000010;
+   FSS_WRITETHROUGH              = $00000004;
+   FSS_RESERVED                  = $00000008;
    FSS_SAVECOMMANDSHISTORY       = $00000020;
    FSS_SAVEFOLDERSHISTORY        = $00000040;
    FSS_SAVEVIEWANDEDITHISTORY    = $00000080;
@@ -1014,8 +1029,9 @@ type
 
 const
    KSFLAGS_DISABLEOUTPUT       = $00000001;
+//   KSFLAGS_NOSENDKEYSTOPLUGINS = $00000002;
+//   KSFLAGS_REG_MULTI_SZ        = $00100000;
    KSFLAGS_NOSENDKEYSTOPLUGINS = $00000002;
-   KSFLAGS_REG_MULTI_SZ        = $00100000;
 
 type
    PKeySequence = ^TKeySequence;
@@ -1190,7 +1206,9 @@ type
       Wrap : Integer;
       WordWrap : Integer;
       Hex : Integer;
-      Reserved : array [0..3] of DWORD;
+      //Reserved : array [0..3] of DWORD;
+      Processed : Integer;
+      Reserved : array [0..2] of DWORD;
    end;
 
 type
@@ -1823,6 +1841,8 @@ type
 
       snprintf : Pointer;
 
+      Reserved : array [0..19] of DWORD;
+      (*
       Reserved : array [0..7] of DWORD;
 
       LIsLower : TFarStdLocalIsLower;
@@ -1837,6 +1857,7 @@ type
       LStrlwr : TFarStdLocalStrLwr;
       LStricmp : TFarStdLocalStrICmp;
       LStrnicmp : TFarStdLocalStrNICmp;
+      *)
 
       Unquote : TFarStdUnquote;
       ExpandEnvironmentStr : TFarStdExpandEnvironmentStr;
@@ -1864,6 +1885,13 @@ type
       MkLink : TFarStdMkLink;
       ConvertNameToReal : TFarStdConvertNameToReal;
       GetReparsePointInfo : TFarStdGetReparsePointInfo;
+
+// TODO FIXME ***
+      Execute                     : Pointer;
+      ExecuteLibrary              : Pointer;
+      DisplayNotification         : Pointer;
+      DispatchInterThreadCalls    : Pointer;
+      BackgroundTask              : Pointer;
   end;
 
 type
@@ -1901,19 +1929,21 @@ type
       SendDlgMessage : TFarApiSendDlgMessage;
       DefDlgProc : TFarApiDefDlgProc;
       //Reserved : DWORD;
-      Reserved : IntPtr;
+      Reserved : IntPtr; // FIXME: actually, DWORD_PTR
       ViewerControl : TFarApiViewerControl;
    end;
 
 { PLUGIN_FLAGS }
 
 const
-   PF_PRELOAD       = $0001;
+   PF_PRELOAD       = $0001; // early dlopen and initialize plugin
    PF_DISABLEPANELS = $0002;
    PF_EDITOR        = $0004;
    PF_VIEWER        = $0008;
    PF_FULLCMDLINE   = $0010;
    PF_DIALOG        = $0020;
+   // early dlopen plugin but initialize it later, when it will be really needed
+   PF_PREOPEN       = $8000;
 
 type
    PPluginInfo = ^TPluginInfo;
@@ -2024,6 +2054,8 @@ const
    OPM_TOPLEVEL  = $0010;
    OPM_DESCR     = $0020;
    OPM_QUICKVIEW = $0040;
+   OPM_PGDN      = $0080;
+   OPM_COMMANDS  = $0100;
 
 type
    POpenPluginInfo = ^TOpenPluginInfo;
