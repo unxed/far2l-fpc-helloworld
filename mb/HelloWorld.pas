@@ -15,6 +15,9 @@ library HelloWorld;
 
 {$UNITPATH lazutf8}
 uses Windows, Plugin, fpcadds, LazUTF8;
+// LazUTF8 is helper unit from Lazarus to ease UTF-8 string manipulations.
+// See https://lazarus-ccr.sourceforge.io/docs/lazutils/lazutf8/index-5.html
+// for LazUTF8 API reference.
 
 type
   TMessage = (MTitle, MMessage1, MMessage2, MMessage3, MMessage4, MButton);
