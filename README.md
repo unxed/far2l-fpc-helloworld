@@ -12,3 +12,6 @@ Current state: builds, runs.
 Both are working, but mb is preferred as UTF-32 is almost not supported by Free Pascal. mb version also has bundled LazUTF8 unit from Lazarus to ease UTF-8 string manipulations.
 
 Important! PluginW.pas and Plugin.pas are somethat incomplete, see FIXME comments. Also, C-language comments are not updated to releated Pascal-changes in those files. Windows.pas may be incomplete also.
+
+Discussion on Free Pascal Russian forum:
+http://www.freepascal.ru/forum/viewtopic.php?f=10&t=43383
